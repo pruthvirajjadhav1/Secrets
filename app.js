@@ -3,6 +3,7 @@ const express = require("express");
 const ejs = require("ejs");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const encrypt = require("mongoose-encryption");
 
 const app = express();
 
@@ -16,12 +17,16 @@ app.use(
 
 mongoose.connect("mongodb://localhost:27017/userDB", { useNewUrlParser: true });
 
-const UserSchema = {
+const userSchema = new mongoose.Schema({
   email: String,
   password: String,
-};
+});
 
-const User = new mongoose.model("User", UserSchema);
+// Encryption
+const secret = "Thisismysecret";
+userSchema.plugin(encrypt, { secret: secret, encryptedFields: ["password"] });
+
+const User = new mongoose.model("User", userSchema);
 
 app.get("/", function (req, res) {
   res.render("home");
@@ -70,3 +75,6 @@ app.post("/login", function (req, res) {
 app.listen(8000, function () {
   console.log("Server started at port 8000.");
 });
+
+// Level 1: simpley add email and password in DB and while login just check if it matches
+// Level 2: Encription
